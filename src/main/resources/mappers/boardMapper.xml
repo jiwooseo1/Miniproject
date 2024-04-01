@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.miniproject.mappers.boardMapper">
+  
+  	<select id ="getAllBoard" resultType="com.miniproject.domain.Board">
+  		select * from board order by no desc limit #{startRowIndex}, #{viewPostCntPerPage}
+  	</select>
+  	
+  	<insert id="insertNewBoard">
+  		insert into board(writer, title, content)
+  		values(#{writer}, #{title}, #{content})
+  	</insert>
+  	
+  	<select id="getNo" resultType="int">
+  		select max(no) as maxNo from board
+  	</select>
+  	
+  	<insert id="insertUploadedFile">
+  		insert into uploadedfile(originalFileName, newFileName, fileSize, boardNo, thumbFileName)
+  		values(#{originalFileName}, #{newFileName}, #{fileSize}, #{boardNo}, #{thumbFileName})	
+  	</insert>
+  	
+  	<select id="getReadCountProcess" resultType="com.miniproject.domain.ReadCountProcess">
+  		select * from readcountprocess where boardNo = #{boardNo} and ipAddr = #{ipAddr} 
+  	</select>
+  	
+  	<select id="getHourDiffReadTime" resultType="int">
+  		select timestampdiff(hour,
+ 		(select readTime from readcountprocess where ipAddr = #{ipAddr} and boardNo = #{no}), now()) as hourDiff
+  	</select>
+  	
+  	<update id="updateReadCountProcess">
+  		update readcountprocess set readTime = now()
+		where ipAddr = #{ipAddr} and boardNo = #{boardNo} <!-- VO에서 받아오는거기때문에 VO랑 이름을 맞춰줘야한다 -->
+  	</update>
+  		
+  	<update id="updateReadCount">
+  		update board set readcount = readcount + 1 where no = #{no}
+  	</update>
+  	
+  	<insert id="insertReadCountProcess">
+  		insert into readcountprocess(ipAddr, boardNo)
+  		values(#{ipAddr}, #{boardNo})
+  	</insert>
+  	
+  	<select id="getBoardByNo" resultType="Board"> <!-- mybatis에서 설정해놓음 -->
+  		select * from board where no = #{no}
+  	</select>
+  	
+  	<select id="getUploadedFiles" resultType="com.miniproject.domain.UploadedFile">
+  		select * from uploadedfile where boardNo = #{no}
+  	</select>
+  		
+  	<select id="getBoardCnt" resultType="int">
+  		select count(*) from board
+  	</select>
+  	
+  	<select id="getTotalBoardCntWithSearch" resultType="int">
+  		select count(*) from board where
+  		<choose>
+  			<when test="searchType == 'title'">
+  				title like #{searchWord}
+  			</when>
+  			<when test="searchType == 'writer'">
+  				writer like #{searchWord}
+  			</when>
+  			<otherwise>
+  				content like #{searchWord}
+  			</otherwise>
+  		</choose>
+  	</select>
+  	
+  	<select id="getAllBoardWithSearch" resultType="com.miniproject.domain.Board">
+  		select * from board where
+  		<choose>
+  			<when test="searchType == 'writer'">
+  				writer like #{searchWord}
+  			</when>
+  			<when test="searchType == 'title'">
+  				title like #{searchWord}
+  			</when>
+  			<otherwise>
+  				content like #{searchWord}
+  			</otherwise>
+  		</choose>
+  				order by no desc limit #{startRowIndex}, #{viewPostCntPerPage}
+  	</select>
+  	
+  	
+  	<select id="getWriterByNo" resultType="string">
+  		select writer from board where no = #{no}
+  	</select>
+  
+  	<insert id="like">
+  		insert into boardlike(who, boardNo) values(#{who}, #{boardNo})
+  	</insert>
+  	
+  	<delete id="dislike">
+  		delete from boardlike where who = #{who} and boardNo = #{boardNo}
+  	</delete>
+  	
+  	<update id="incDecLikeCount">
+  		update board set likecount = likecount + #{n} where no = #{boardNo}
+  	</update>
+  	
+  	<select id="getPeopleWhoLikesBoard" resultType="string">
+  		select who from boardlike where boardNo = #{boardNo}
+  	</select>
+  	
+  </mapper>

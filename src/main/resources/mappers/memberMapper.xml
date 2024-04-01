@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.miniproject.mappers.memberMapper">
+  	<select id="curDate" resultType="string">
+  		select now()
+  	</select>
+  	  	
+  	  	
+  	<update id="updateUserPoint">
+  		<selectKey keyProperty="howmuch" resultType="int" order="BEFORE">
+  			select howmuch from pointpolicy where why = #{why}
+  		</selectKey>
+  			update member set userPoint = userPoint + #{howmuch}  where userId = #{userId}
+  	</update>
+  	
+  	<select id="login" resultType="com.miniproject.domain.Member">
+	  	select m.*, u.newFileName as memberImg
+		from member m inner join uploadedfile u
+		on m.userImg = u.no
+		where userId = #{userId} and userPwd = sha1(md5(#{userPwd}))
+  	</select>
+  	
+  	<update id="updateSession">
+  		update member set sessionLimit = #{sessionLimit}, sessionKey = #{sessionKey} where userId = #{userId}
+  	</update>
+  	
+  	<select id="selectAutoLoginUser" resultType="com.miniproject.domain.Member">
+  		select m.*, u.newFileName as memberImg
+		from member m inner join uploadedfile u
+		on m.userImg = u.no 
+		where sessionKey = #{sessionKey} and sessionLimit > now()
+  	</select>
+  	
+  	
+  </mapper>
